@@ -4,100 +4,38 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Just relax, ok?</title>
-
 <style>
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:#000;
-  color:#fff;
-  overflow:hidden;
-  user-select:none;
-}
-
-#bg{
-  position:fixed;
-  inset:0;
-  background:url("D0AB2572-11AE-47A3-AD8D-A31B53372CB5.jpeg") center/cover no-repeat;
-  filter:brightness(.7);
-  z-index:-2;
-}
-
-.overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.88);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  z-index:10;
-}
-
-.box{
-  max-width:90%;
-  font-size:18px;
-  line-height:1.6;
-}
-
-button{
-  margin-top:20px;
-  padding:12px 30px;
-  font-size:18px;
-  border:none;
-  border-radius:30px;
-}
-
-#app{
-  width:100%;
-  height:100vh;
-  display:none;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-}
-
-#title{
-  position:absolute;
-  top:30px;
-  font-size:22px;
-}
-
-#timer{
-  font-size:76px;
-  font-weight:bold;
-  letter-spacing:3px;
-}
+*{box-sizing:border-box;}
+body{margin:0;font-family:Arial,sans-serif;background:#000;color:#fff;overflow:hidden;user-select:none;}
+#bg{position:fixed;inset:0;background:url("D0AB2572-11AE-47A3-AD8D-A31B53372CB5.jpeg") center/cover no-repeat;filter:brightness(.7);z-index:-2;}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;text-align:center;z-index:10;}
+.box{max-width:90%;font-size:18px;line-height:1.6;}
+button{margin-top:20px;padding:12px 30px;font-size:18px;border:none;border-radius:30px;}
+#app{width:100%;height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;}
+#title{position:absolute;top:30px;font-size:22px;}
+#timer{font-size:76px;font-weight:bold;letter-spacing:3px;}
 </style>
 </head>
-
 <body>
 
 <div id="bg"></div>
 
-<!-- ОБУЧЕНИЕ -->
+<!-- Обучение -->
 <div class="overlay" id="tutorial">
   <div class="box">
     <h2>Just relax</h2>
-    <p>
-      Просто жди <b>15 минут</b>.<br><br>
-      Не сворачивай сайт.<br>
-      Не блокируй экран.<br>
-      Не выключай музыку.<br><br>
-      Есть пасхалка 👀
-    </p>
+    <p>Просто жди <b>15 минут</b>.<br>Не сворачивай сайт.<br>Не блокируй экран.<br>Не выключай музыку.<br>Есть пасхалка 👀</p>
     <button id="startBtn">Начать</button>
   </div>
 </div>
 
-<!-- ИГРА -->
+<!-- Игра -->
 <div id="app">
   <div id="title">Just relax, ok?</div>
   <div id="timer">15:00</div>
 </div>
 
-<!-- ФИНАЛ -->
+<!-- Финал -->
 <div class="overlay" id="finish" style="display:none">
   <div class="box">
     <h2>🎉 Молодец!</h2>
@@ -105,7 +43,8 @@ button{
   </div>
 </div>
 
-<audio id="player" preload="auto" playsinline></audio>
+<!-- Видео для музыки -->
+<video id="player" preload="auto" playsinline style="display:none"></video>
 
 <script>
 const tracks=[
@@ -125,92 +64,65 @@ let lastTick=0;
 const player=document.getElementById("player");
 const timerEl=document.getElementById("timer");
 
-function fmt(s){
-  return String(Math.floor(s/60)).padStart(2,"0")+":"+
-         String(s%60).padStart(2,"0");
-}
+// Формат времени
+function fmt(s){return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");}
 
-// ⬇️ ВАЖНО: запуск ТОЛЬКО по кнопке
+// Кнопка старт
 document.getElementById("startBtn").onclick=()=>{
-  unlockAudio();
+  startMusic();
   start();
 };
 
-function unlockAudio(){
-  player.src=tracks[0];
+// Запуск музыки через видео
+function startMusic(){
+  player.src=tracks[currentTrack];
   player.muted=false;
   player.volume=1;
-
-  const p=player.play();
-  if(p!==undefined){
-    p.then(()=>{
-      player.pause();
-      player.currentTime=0;
-    }).catch(()=>{});
-  }
+  player.play().catch(()=>{});
 }
 
+// Старт игры
 function start(){
   document.getElementById("tutorial").style.display="none";
   document.getElementById("finish").style.display="none";
   document.getElementById("app").style.display="flex";
-
   totalSeconds=15*60;
   timerEl.textContent=fmt(totalSeconds);
   running=true;
   lastTick=Date.now();
-
-  playTrack();
   startTimer();
 }
 
+// Таймер
 function startTimer(){
   clearInterval(interval);
   interval=setInterval(()=>{
     const now=Date.now();
     if(now-lastTick>1500){ resetAll(); return; }
     lastTick=now;
-
     totalSeconds--;
     timerEl.textContent=fmt(totalSeconds);
-
-    if(totalSeconds===666){
-      document.body.style.filter="hue-rotate(180deg)";
-    }
-
-    if(totalSeconds<=0){
-      clearInterval(interval);
-      complete();
-    }
+    if(totalSeconds===666){document.body.style.filter="hue-rotate(180deg)";}
+    if(totalSeconds<=0){clearInterval(interval);complete();}
   },1000);
 }
 
-function playTrack(){
-  player.src=tracks[currentTrack];
-  player.currentTime=0;
-  player.play().catch(()=>{});
-}
-
+// Следующий трек
 player.onended=()=>{
   currentTrack=(currentTrack+1)%tracks.length;
-  playTrack();
+  player.src=tracks[currentTrack];
+  player.play().catch(()=>{});
 };
 
-player.addEventListener("pause",()=>{
-  if(running) player.play().catch(()=>{});
-});
+// Анти-пауза и анти-перемотка
+player.addEventListener("pause",()=>{if(running) player.play().catch(()=>{});});
+player.addEventListener("seeking",()=>{player.currentTime=0;});
 
-player.addEventListener("seeking",()=>{
-  player.currentTime=0;
-});
+// Анти-чит
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&running) resetAll();});
+window.addEventListener("blur",()=>{if(running) resetAll();});
 
-document.addEventListener("visibilitychange",()=>{
-  if(document.hidden && running) resetAll();
-});
-window.addEventListener("blur",()=>{
-  if(running) resetAll();
-});
-
+// Финал
 function complete(){
   running=false;
   player.pause();
@@ -218,6 +130,7 @@ function complete(){
   document.getElementById("finish").style.display="flex";
 }
 
+// Сброс
 function resetAll(){
   running=false;
   clearInterval(interval);
@@ -229,6 +142,5 @@ function resetAll(){
   document.getElementById("tutorial").style.display="flex";
 }
 </script>
-
 </body>
 </html>
