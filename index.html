@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Just relax, ok?</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#000;
+  color:#fff;
+  overflow:hidden;
+  user-select:none;
+}
+
+/* ФОН */
+#bg{
+  position:fixed;
+  inset:0;
+  background:url("D0AB2572-11AE-47A3-AD8D-A31B53372CB5.jpeg") center/cover no-repeat;
+  filter:brightness(0.7);
+  z-index:-2;
+}
+
+/* затемнение */
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.85);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  z-index:10;
+}
+
+.box{
+  max-width:90%;
+  font-size:18px;
+  line-height:1.5;
+}
+
+/* основной экран */
+#app{
+  position:relative;
+  width:100%;
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+
+#title{
+  position:absolute;
+  top:30px;
+  font-size:22px;
+  opacity:.9;
+}
+
+/* ТАЙМЕР */
+#timer{
+  font-size:72px;
+  font-weight:bold;
+  letter-spacing:2px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="bg"></div>
+
+<!-- ОБУЧЕНИЕ -->
+<div class="overlay" id="tutorial">
+  <div class="box">
+    <h2>Небольшое обучение</h2>
+    <p>
+      Просто подожди <b>15 минут</b>.<br><br>
+      Не закрывай страницу.<br>
+      Не выключай музыку.<br><br>
+      Где-то тут есть пасхалка 👀
+    </p>
+    <br>
+    <button onclick="start()">Окей</button>
+  </div>
+</div>
+
+<!-- ОСНОВНОЙ ЭКРАН -->
+<div id="app" style="display:none">
+  <div id="title">Just relax, ok?</div>
+  <div id="timer">15:00</div>
+</div>
+
+<!-- МУЗЫКА -->
+<audio id="player"></audio>
+
+<script>
+const tracks = [
+  "сельдережуй,-shut-up!-2.0.mp3",
+  "дебют.мс.беременности.mp3.mp3",
+  "Курчаткина.m4a",
+  "VIP СКАМ .mp3",
+  "ScreenRecording_12-11-2025 09-03-05_1 (Cover).mp3"
+];
+
+let currentTrack = 0;
+const player = document.getElementById("player");
+
+/* таймер */
+let totalSeconds = 15 * 60;
+let timerInterval = null;
+
+function formatTime(sec){
+  const m = String(Math.floor(sec/60)).padStart(2,"0");
+  const s = String(sec%60).padStart(2,"0");
+  return `${m}:${s}`;
+}
+
+function start(){
+  document.getElementById("tutorial").style.display="none";
+  document.getElementById("app").style.display="flex";
+
+  // музыка
+  playTrack();
+
+  player.onended = () => {
+    currentTrack = (currentTrack + 1) % tracks.length;
+    playTrack();
+  };
+
+  // таймер
+  document.getElementById("timer").textContent = formatTime(totalSeconds);
+  timerInterval = setInterval(()=>{
+    totalSeconds--;
+    document.getElementById("timer").textContent = formatTime(totalSeconds);
+
+    // пасхалка 😏
+    if(totalSeconds === 666){
+      document.body.style.filter = "hue-rotate(180deg)";
+    }
+
+    if(totalSeconds <= 0){
+      clearInterval(timerInterval);
+      document.getElementById("timer").textContent = "00:00";
+    }
+  },1000);
+}
+
+function playTrack(){
+  player.src = tracks[currentTrack];
+  player.play();
+}
+</script>
+
+</body>
+</html>
