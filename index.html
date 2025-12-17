@@ -27,7 +27,7 @@ body{
 .overlay{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.85);
+  background:rgba(0,0,0,.88);
   display:flex;
   align-items:center;
   justify-content:center;
@@ -38,14 +38,21 @@ body{
 .box{
   max-width:90%;
   font-size:18px;
-  line-height:1.5;
+  line-height:1.6;
+}
+
+button{
+  margin-top:20px;
+  padding:12px 28px;
+  font-size:18px;
+  border:none;
+  border-radius:30px;
 }
 
 #app{
-  position:relative;
   width:100%;
   height:100vh;
-  display:flex;
+  display:none;
   flex-direction:column;
   align-items:center;
   justify-content:center;
@@ -59,9 +66,9 @@ body{
 }
 
 #timer{
-  font-size:72px;
+  font-size:76px;
   font-weight:bold;
-  letter-spacing:2px;
+  letter-spacing:3px;
 }
 </style>
 </head>
@@ -73,21 +80,20 @@ body{
 <!-- ОБУЧЕНИЕ -->
 <div class="overlay" id="tutorial">
   <div class="box">
-    <h2>Небольшое обучение</h2>
+    <h2>Just relax</h2>
     <p>
-      Просто подожди <b>15 минут</b>.<br><br>
-      Не закрывай страницу.<br>
-      Не сворачивай приложение.<br>
+      Просто жди <b>15 минут</b>.<br><br>
+      Не сворачивай сайт.<br>
+      Не блокируй экран.<br>
       Не выключай музыку.<br><br>
-      Тут есть пасхалка 👀
+      Есть пасхалка 👀
     </p>
-    <br>
-    <button onclick="start()">Окей</button>
+    <button onclick="start()">Начать</button>
   </div>
 </div>
 
 <!-- ИГРА -->
-<div id="app" style="display:none">
+<div id="app">
   <div id="title">Just relax, ok?</div>
   <div id="timer">15:00</div>
 </div>
@@ -118,6 +124,7 @@ let currentTrack=0;
 let totalSeconds=15*60;
 let interval=null;
 let running=false;
+let lastTick=0;
 
 const player=document.getElementById("player");
 const timerEl=document.getElementById("timer");
@@ -131,9 +138,12 @@ function start(){
   document.getElementById("tutorial").style.display="none";
   document.getElementById("finish").style.display="none";
   document.getElementById("app").style.display="flex";
-  running=true;
+
   totalSeconds=15*60;
   timerEl.textContent=fmt(totalSeconds);
+  running=true;
+  lastTick=Date.now();
+
   playTrack();
   startTimer();
 }
@@ -141,6 +151,15 @@ function start(){
 function startTimer(){
   clearInterval(interval);
   interval=setInterval(()=>{
+    const now=Date.now();
+
+    // ЖЁСТКИЙ АНТИ-ЧИТ
+    if(now-lastTick>1500){
+      resetAll();
+      return;
+    }
+
+    lastTick=now;
     totalSeconds--;
     timerEl.textContent=fmt(totalSeconds);
 
@@ -173,7 +192,7 @@ player.onended=()=>{
   playTrack();
 };
 
-/* АНТИ-ПАУЗА И ПЕРЕМОТКА */
+// БЛОК ПАУЗЫ И ПЕРЕМОТКИ
 player.addEventListener("pause",()=>{
   if(running) player.play();
 });
@@ -182,11 +201,9 @@ player.addEventListener("seeking",()=>{
   player.currentTime=0;
 });
 
-/* АНТИ-ЧИТ */
+// ДОП АНТИ-ЧИТ
 document.addEventListener("visibilitychange",()=>{
-  if(document.hidden && running){
-    resetAll();
-  }
+  if(document.hidden && running) resetAll();
 });
 
 window.addEventListener("blur",()=>{
